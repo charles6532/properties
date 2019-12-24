@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd">
+<mapper namespace="sbfavoritemember">
+	<delete id="delete" parameterType="Long">
+		DELETE FROM SB_FAVORITE_MEMBER WHERE MEM_ID=#{memId}
+	</delete>
+	<insert id="add" parameterType="kr.starbocks.api.domain.SbFavoriteMemberDO">
+		INSERT INTO sb_favorite_member( added_at, mem_id, updated_at, user_id) VALUES( #{addedAt}, #{memId}, #{updatedAt}, #{userId})
+	</insert>
+	
+	<select id="data" resultType="kr.starbocks.api.domain.SbFavoriteMemberDO">
+		SELECT *
+		FROM SB_FAVORITE_MEMBER
+		WHERE  MEM_ID=#{memId}
+	</select>
+	<select id="list" resultType="kr.starbocks.api.domain.SbFavoriteMemberDO" parameterType="map">
+		SELECT
+		t1.*
+		FROM (
+			SELECT /*+INDEX_DESC(sb_favorite_member sb_favorite_member_pk) */ ROWNUM as rnum, t.*
+			FROM SB_FAVORITE_MEMBER t
+		) t1
+		WHERE t1.rnum &lt;= #{end}
+		AND #{start} &lt;= t1.rnum
+	</select>
+	<select id="next" resultType="long">
+		SELECT sb_favorite_member_seq.NEXTVAL as next FROM DUAL
+	</select>
+	<update id="update" parameterType="kr.starbocks.api.domain.SbFavoriteMemberDO">
+		UPDATE SB_FAVORITE_MEMBER SET added_at=#{addedAt}, updated_at=#{updatedAt}, WHERE MEM_ID=#{memId}
+	</update>
+</mapper>

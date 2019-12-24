@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd">
+<mapper namespace="sbphoto">
+	<delete id="delete" parameterType="Long">
+		DELETE FROM SB_PHOTO WHERE 
+	</delete>
+	<insert id="add" parameterType="kr.starbocks.api.domain.SbPhotoDO">
+		INSERT INTO sb_photo( 
+		added_at, photo_id, photo_name, prop_id, 
+		type_cd, updated_at
+		) VALUES( 
+		SYSTIMESTAMP, #{photoId}, #{photoName}, #{propId},
+		 #{typeCd}, SYSTIMESTAMP)
+	</insert>
+	
+	<select id="data" resultType="kr.starbocks.api.domain.SbPhotoDO">
+		SELECT *
+		FROM SB_PHOTO
+		WHERE 
+	</select>
+	<select id="list" resultType="kr.starbocks.api.domain.SbPhotoDO" parameterType="map">
+		SELECT
+		t1.*
+		FROM (
+			SELECT /*+INDEX_DESC(sb_photo sb_photo_pk) */ ROWNUM as rnum, t.*
+			FROM SB_PHOTO t
+			WHERE prop_id = #{propId}
+			AND type_cd = #{typeCd}
+		) t1
+		WHERE t1.rnum &lt;= #{end}
+		AND #{start} &lt;= t1.rnum
+	</select>
+	<select id="next" resultType="long">
+		SELECT sb_photo_seq.NEXTVAL as next FROM DUAL
+	</select>
+	<update id="update" parameterType="kr.starbocks.api.domain.SbPhotoDO">
+		UPDATE SB_PHOTO SET added_at=#{addedAt}, photo_id=#{photoId}, photo_name=#{photoName}, prop_id=#{propId}, type_cd=#{typeCd}, updated_at=#{updatedAt} WHERE 
+	</update>
+</mapper>

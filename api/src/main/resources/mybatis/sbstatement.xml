@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd">
+<mapper namespace="sbstatement">
+	<delete id="delete" parameterType="Long">
+		DELETE FROM SB_STATEMENT WHERE STATEMENT_ID=#{statementId}
+	</delete>
+	<insert id="add" parameterType="kr.starbocks.api.domain.SbStatementDO">
+		<!-- INSERT INTO sb_statement( added_at, amount, ask_id, payment_id, statement_id, tx_cd, updated_at, user_id) VALUES( #{addedAt}, #{amount}, #{askId}, #{paymentId}, #{statementId}, #{txCd}, #{updatedAt}, #{userId}) -->
+		INSERT INTO sb_statement( statement_id, user_id, tx_cd, amount, payment_id, ask_id, added_at, updated_at ) 
+		VALUES( sb_payment_seq.nextval, sb_payment_seq.nextval, 'TX00', #{amount}, 111, 111, systimestamp, systimestamp )
+	</insert>
+	<select id="data" resultType="kr.starbocks.api.domain.SbStatementDO">
+		SELECT *
+		FROM SB_STATEMENT
+		WHERE STATEMENT_ID=#{statementId}
+	</select>
+	<select id="list" resultType="kr.starbocks.api.domain.SbStatementDO" parameterType="map">
+		SELECT
+		t1.*
+		FROM (
+			SELECT /*+INDEX_DESC(sb_statement sb_statement_pk) */ ROWNUM as rnum, t.*
+			FROM SB_STATEMENT t
+		) t1
+		WHERE t1.rnum &lt;= #{end}
+		AND #{start} &lt;= t1.rnum
+	</select>
+	<select id="next" resultType="long">
+		SELECT sb_statement_seq.NEXTVAL as next FROM DUAL
+	</select>
+	<update id="update" parameterType="kr.starbocks.api.domain.SbStatementDO">
+		UPDATE SB_STATEMENT SET added_at=#{addedAt}, amount=#{amount}, ask_id=#{askId}, payment_id=#{paymentId}, tx_cd=#{txCd}, updated_at=#{updatedAt}, user_id=#{userId} WHERE STATEMENT_ID=#{statementId}
+	</update>
+	<select id="balance" parameterType="long" resultType="long">
+		SELECT
+		SUM(DECODE(tx_cd, 'ST00', amount,0)) - SUM(DECODE(tx_cd, 'ST11', amount,0)) as balance
+		FROM sb_statement
+		WHERE user_id = #{userId}
+		GROUP BY user_id	
+	</select><!-- 보유잔액 불러오기 -->
+	<select id="listbyid" parameterType="kr.starbocks.api.domain.SbStatementDO" resultType="kr.starbocks.api.domain.SbStatementDO">
+		SELECT
+		t1.statement_id
+		, t1.user_id
+		, t1.deposit
+		, t1.payout
+		, t1.acc_deposit
+		, t1.acc_payout
+		, t1.acc_deposit - t1.acc_payout AS balance
+		, t1.payment_id
+		, t1.ask_id
+		, t1.added_at
+		, t1.updated_at
+		FROM (
+		SELECT
+		statement_id
+		, user_id
+		, DECODE(tx_cd, 'ST00', amount,0) as deposit
+		, DECODE(tx_cd, 'ST11', amount,0) as payout
+		, SUM(DECODE(tx_cd, 'ST00', amount,0)) OVER(ORDER BY statement_id ROWS
+		BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as acc_deposit
+		, SUM(DECODE(tx_cd, 'ST11', amount,0)) OVER(ORDER BY statement_id ROWS
+		BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as acc_payout
+		, payment_id
+		, ask_id
+		, added_at
+		, updated_at
+		FROM sb_statement
+		WHERE user_id = 2709
+		) t1
+		ORDER BY t1.statement_id DESC
+	</select>
+	<insert id="rechargeAdd" parameterType="kr.starbocks.api.domain.SbStatementDO">
+		INSERT INTO sb_statement
+		( 
+		statement_id
+		, user_id
+		, tx_cd
+		, amount
+		, payment_id
+		, ask_id
+		, added_at
+		, updated_at ) 
+		VALUES( 
+		sb_statement_seq.nextval
+		, #{userId}
+		, 'ST00'
+		, #{amount}
+		, #{paymentId}
+		, 0
+		, systimestamp
+		, systimestamp )
+	</insert>
+	<insert id="payingOut" parameterType="kr.starbocks.api.domain.SbStatementDO">
+		INSERT INTO sb_statement
+		( 
+		statement_id
+		, user_id
+		, tx_cd
+		, amount
+		, payment_id
+		, ask_id
+		, added_at
+		, updated_at ) 
+		VALUES( 
+		sb_statement_seq.nextval
+		, #{userId}
+		, 'ST11'
+		, #{amount}
+		, #{paymentId}
+		, #{askId}
+		, systimestamp
+		, systimestamp )
+	</insert>
+	<select id="salesList" parameterType="kr.starbocks.api.domain.SbStatementDO" resultType="kr.starbocks.api.domain.SbStatementDO" >
+		SELECT
+		t1.*
+		FROM (
+			SELECT /*+INDEX_DESC(sb_statement sb_statement_pk) */ 
+			ROWNUM as ridx
+			, t.*
+			FROM SB_STATEMENT t
+			WHERE t.user_id=#{userId}
+		) t1
+		WHERE t1.ridx &lt;= #{endRow}
+		AND #{startRow} &lt;= t1.ridx
+	</select>
+</mapper>

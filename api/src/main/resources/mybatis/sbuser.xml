@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd">
+<mapper namespace="sbuser">
+	<delete id="delete" parameterType="Long">
+		DELETE FROM SB_USER WHERE
+		USER_ID=#{userId}
+	</delete>
+	<insert id="add" parameterType="kr.starbocks.api.domain.SbUserDO"><!-- 이 부분 수정했음 -->
+		INSERT INTO sb_user( added_at, added_by, email, name, passwd,
+		updated_at, updated_by, user_id) VALUES( SYSTIMESTAMP, #{userId}/3, 
+		#{email, jdbcType=VARCHAR}, #{name, jdbcType=VARCHAR}, #{passwd, jdbcType=VARCHAR}, SYSTIMESTAMP, 
+		#{userId}/3, #{userId})
+	</insert>
+
+	<select id="data" resultType="kr.starbocks.api.domain.SbUserDO">
+		SELECT 
+		*
+		FROM SB_USER
+		WHERE user_id=#{userId}
+	</select>
+	<select id="edata" parameterType="String" resultType="kr.starbocks.api.domain.SbUserDO">
+		SELECT 
+		*
+		FROM SB_USER
+		WHERE email=#{email}
+	</select>
+	<select id="list" resultType="kr.starbocks.api.domain.SbUserDO" parameterType="map">
+		<!-- 
+		SELECT
+		t1.*
+		FROM (
+		SELECT /*+INDEX_DESC(sb_user sb_user_pk) */ ROWNUM as rnum, t.*
+		FROM SB_USER t
+		) t1
+		WHERE t1.rnum &lt;= #{end}
+		AND #{start} &lt;= t1.rnum 
+		-->
+		<!-- <![CDATA[
+		SELECT *
+		FROM (
+			SELECT
+			ROWNUM as ridx
+			,t1.*
+			FROM ( 
+				SELECT
+				user_id
+				,name
+				,added_at
+				FROM sb_user
+				ORDER BY added_by DESC
+			) t1
+			WHERE ROWNUM <= #{end}
+		) t2
+		WHERE #{start} <= t2.ridx
+		]]> -->
+		
+		SELECT 
+			 user_id 
+			,name 
+			,email 
+			,added_at 
+		FROM (
+			SELECT
+			ROWNUM as ridx
+			,t1.*
+			FROM ( 
+				SELECT
+				user_id
+				,email
+				,name
+				,added_at
+				FROM sb_user
+				ORDER BY added_at DESC
+			) t1
+			WHERE ROWNUM &lt;= #{end}
+		) t2
+		WHERE #{start} &lt;= t2.ridx
+		
+		<!-- <![CDATA[
+		select * from 
+		sb_user
+		where user_id > #{start}
+		and user_id < #{end}
+		]]> -->
+	</select>
+	<select id="next" resultType="long">
+		SELECT sb_user_seq.NEXTVAL as next
+		FROM DUAL
+	</select>
+	<update id="update"
+		parameterType="kr.starbocks.api.domain.SbUserDO"><!-- 수정한 부분 -->
+		UPDATE SB_USER SET 
+		added_at=systimestamp
+		,added_by=#{userId}
+		, email=#{email, jdbcType=VARCHAR}
+		, name=#{name, jdbcType=VARCHAR}
+		, passwd=#{passwd, jdbcType=VARCHAR}
+		, updated_at=systimestamp
+		, updated_by=#{userId} 
+		WHERE
+		USER_ID=#{userId}
+	</update>
+
+	<!-- 아이디 확인 -->
+	<select id="checkId" parameterType="String" resultType="int">
+		select
+		count(*) from sb_user where email=#{email}
+	</select>
+	<select resultType="long" id="getCount">
+		SELECT COUNT(*) 
+		FROM sb_user
+	</select>
+	
+	<select id="selectuserList" resultType="hashmap" parameterType="hashmap">
+    <![CDATA[
+        SELECT 
+			 user_id 
+			,name 
+			,email 
+			,added_at 
+		FROM (
+			SELECT
+			ROWNUM as ridx
+			,t1.*
+			FROM ( 
+				SELECT
+				user_id
+				,email
+				,name
+				,added_at
+				FROM sb_user
+				ORDER BY added_at DESC
+			) t1
+			WHERE ROWNUM <= #{pageStart}+#{perPageNum}
+		) t2
+		WHERE #{pageStart} < t2.ridx
+    ]]>
+	</select>
+
+</mapper>
+ 
+ 

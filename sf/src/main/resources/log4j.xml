@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration PUBLIC "-//APACHE//DTD LOG4J 1.2//EN" "log4j.dtd">
+<log4j:configuration
+	xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+	<!-- Appenders -->
+	<appender name="console"
+		class="org.apache.log4j.ConsoleAppender">
+		<param name="Target" value="System.out" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%-5p: %c - %m%n" />
+		</layout>
+	</appender>
+	<!-- Daily Rolling Appender for Store front -->
+	<!-- <appender name="starbocks-ams"
+		class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="/home/encore/logs/starbocks/ams.log" />
+		<param name="File" value="C:/PlayData/logs/starbocks/ams.log" />
+		<param name="Append" value="true" />
+		<param name="DatePattern" value="'.'yyyyMMdd" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="[%-22t][%-5p][%-12d{HH:mm:ss.SSS}] Line %L at %44C - %m%n" />
+		</layout>
+	</appender> -->
+
+	<!-- <appender name="starbocks-api"
+		class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="/home/encore/logs/starbocks/api.log" />
+		<param name="File" value="C:/PlayData/logs/starbocks/api.log" />
+		<param name="Append" value="true" />
+		<param name="DatePattern" value="'.'yyyyMMdd" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="[%-22t][%-5p][%-12d{HH:mm:ss.SSS}] Line %L at %44C - %m%n" />
+		</layout>
+	</appender> -->
+
+	<!-- <appender name="starbocks-rapms"
+		class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="/home/encore/logs/starbocks/rapms.log" />
+		<param name="File" value="C:/PlayData/logs/starbocks/rapms.log" />
+		<param name="Append" value="true" />
+		<param name="DatePattern" value="'.'yyyyMMdd" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="[%-22t][%-5p][%-12d{HH:mm:ss.SSS}] Line %L at %44C - %m%n" />
+		</layout>
+	</appender> -->
+
+	<!-- <appender name="starbocks-sf"
+		class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="/home/encore/logs/starbocks/sf.log" />
+		<param name="File" value="C:/PlayData/logs/starbocks/sf.log" />
+		<param name="Append" value="true" />
+		<param name="DatePattern" value="'.'yyyyMMdd" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="[%-22t][%-5p][%-12d{HH:mm:ss.SSS}] Line %L at %44C - %m%n" />
+		</layout>
+	</appender> -->
+
+	<appender name="complete-consult-properties" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="/home/encore/logs/starbocks/complete_consult_properties.csv" />
+		<!-- <param name="File" value="C:/PlayData/logs/starbocks/complete_consult_properties.csv" /> -->
+		<param name="Append" value="true" />
+		<param name="DatePattern" value="'.'yyyyMMdd"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%m%n" />
+		</layout>
+	</appender>
+	
+	<appender name="userid-propid-count" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="/home/encore/logs/starbocks/userid_propid_count.csv" />
+		<!-- <param name="File" value="C:/PlayData/logs/starbocks/userid_propid_count.csv" /> -->
+		<param name="Append" value="true" />
+		<param name="DatePattern" value="'.'yyyyMMdd"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%m%n" />
+		</layout>
+	</appender>
+	
+	<!-- Application Loggers -->
+	<logger name="kr.starbocks.sf">
+		<level value="debug" />
+	</logger>
+
+	<logger name="kr.starbocks.ams">
+		<level value="debug" />
+		<appender-ref ref="starbocks-ams" />
+	</logger>
+
+	<logger name="kr.starbocks.api">
+		<level value="debug" />
+		<appender-ref ref="starbocks-api" />
+	</logger>
+
+	<logger name="kr.starbocks.rapms">
+		<level value="debug" />
+		<appender-ref ref="starbocks-rapms" />
+	</logger>
+
+	<logger name="kr.starbocks.sf">
+		<level value="debug" />
+		<appender-ref ref="starbocks-sf" />
+	</logger>
+
+	<!-- 3rdparty Loggers -->
+	<logger name="org.springframework.core">
+		<level value="debug" />
+	</logger>
+
+	<logger name="org.springframework.beans">
+		<level value="debug" />
+	</logger>
+
+	<logger name="org.springframework.context">
+		<level value="debug" />
+	</logger>
+
+	<logger name="org.springframework.web">
+		<level value="debug" />
+	</logger>
+
+	<logger name="_COMPLETE_CONSULT_PROPERTIES_">
+		<level value="info" />
+		<appender-ref ref="complete-consult-properties" />
+	</logger>
+
+	<logger name="_USERID_PROPID_COUNT_">
+		<level value="info" />
+		<appender-ref ref="userid-propid-count" />
+	</logger>
+	
+	<!-- Root Logger -->
+	<root>
+		<priority value="warn" />
+		<appender-ref ref="console" />
+	</root>
+</log4j:configuration>

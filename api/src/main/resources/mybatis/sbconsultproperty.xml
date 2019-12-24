@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd">
+<mapper namespace="sbconsultproperty">
+	<delete id="delete" parameterType="Long">
+		DELETE FROM
+		SB_CONSULT_PROPERTY WHERE CP_ID=#{consultId}
+	</delete>
+	<insert id="add"
+		parameterType="kr.starbocks.api.domain.SbConsultPropertyDO"> <!-- 이 부분 수정했음 -->
+		INSERT INTO sb_consult_property
+		(
+		cp_id
+		,user_id
+		,title
+		,remark
+		,zipcode
+		,floor_desc
+		,space
+		,maintenance
+		,room_count
+		,price
+		,move_at
+		,built_at
+		,avg_parking_space
+		,houses_count
+		,added_at
+		,updated_at
+		,p_cpid
+		,thr_cpid
+		,props_id
+		)
+		VALUES (
+		#{cpId}
+		,#{userId}
+		,#{conTitle}
+		,#{remark, jdbcType=VARCHAR}
+		,#{zipcode}
+		,#{floorDesc, jdbcType=VARCHAR}
+		,#{space, jdbcType=VARCHAR}
+		,#{maintenance, jdbcType=VARCHAR}
+		,#{roomCount, jdbcType=VARCHAR}
+		,#{price, jdbcType=VARCHAR}
+		,TO_TIMESTAMP(#{moveAt, jdbcType=VARCHAR}, 'MM-DD-YYYY HH24:MI:SS')
+		,#{builtAt, jdbcType=VARCHAR}
+		,#{avgParkingSpace, jdbcType=VARCHAR}
+		,#{housesCount, jdbcType=VARCHAR}
+		,SYSTIMESTAMP
+		,SYSTIMESTAMP
+		,#{pCpId}
+		,#{thrCpId}
+		,#{propsId, jdbcType=VARCHAR}
+		)
+	</insert>
+	<select id="data" parameterType="long"
+		resultType="kr.starbocks.api.domain.SbConsultPropertyDO">
+		SELECT
+		oo.state as state
+		, oo.city as city
+		, oo.legal_district_nm as legalDistrictNm
+		, cc.cp_id as cpId
+		, cc.user_id as userId
+		, cc.title as conTitle
+		, cc.remark
+		, cc.zipcode
+		, cc.floor_desc as floorDesc
+		, cc.space
+		, cc.maintenance
+		, cc.room_count as roomCount
+		, cc.price
+		, cc.move_at as moveAt
+		, cc.built_at as builtAt
+		, cc.avg_parking_space as avgParkingSpace
+		, cc.houses_count as housesCount
+		, cc.added_at as addedAt
+		, cc.updated_at as updatedAt
+		, cc.p_cpid as pCpId
+		, cc.thr_cpid as thrCpId
+		, cc.props_id as propsId
+		FROM SB_CONSULT_PROPERTY cc,
+		sb_location_info oo
+		WHERE cc.zipcode = oo.legal_district_cd
+		and cc.cp_id=#{cpId}
+		and rownum = 1
+	</select>
+	<select id="list"
+		resultType="kr.starbocks.api.domain.SbConsultPropertyDO"
+		parameterType="map">
+		SELECT
+		t1.*
+		FROM (
+		SELECT /*+INDEX_DESC(sb_consult_property sb_consult_property_pk) */ ROWNUM
+		as rnum, t.*
+		FROM SB_CONSULT_PROPERTY t
+		) t1
+		WHERE t1.rnum &lt;= #{end}
+		AND #{start} &lt;=
+		t1.rnum
+	</select>
+	<select id="next" resultType="long">
+		SELECT
+		sb_consult_property_seq.NEXTVAL as next FROM DUAL
+	</select>
+	<update id="update"
+		parameterType="kr.starbocks.api.domain.SbConsultPropertyDO">
+		UPDATE SB_CONSULT_PROPERTY
+		SET added_at=#{addedAt}
+		, title=#{consultTitle}
+		, remark=#{consultRemark}
+		, zipcode=#{zipcode}
+		, floor_desc = #{floorDesc}
+		, space = #{consultSpace}
+		, maintenance = #{maintenance}
+		, room_count = #{roomCount}
+		, price = #{consultPrice}
+		, move_at = TO_TIMESTAMP(#{moveAt})
+		, built_at = TO_TIMESTAMP(#{builtAt})
+		, avg_parking_space = #{parkingSpace}
+		, houses_count = #{houses}
+		WHERE CP_ID=#{consultId}
+	</update>
+	<select id="getzipcode"
+		parameterType="kr.starbocks.api.domain.SbConsultPropertyDO"
+		resultType="long">
+		SELECT
+		DISTINCT legal_district_cd as zipcode
+		FROM sb_location_info
+		where state like #{state}||'%'
+		and city=#{city}
+		and legal_district_nm=#{legalDistrictNm}
+	</select>
+	<select id="conproUserList"
+		parameterType="kr.starbocks.api.domain.SbConsultPropertyDO"
+		resultType="kr.starbocks.api.domain.SbConsultPropertyDO">  <!-- 다시 수정한 부분 -->	
+		<![CDATA[
+WITH tree AS (
+SELECT /*+ FIRST_ROWS */
+*
+FROM (
+SELECT/*+ INDEX_DESC(sb_consult_property sb_consult_property_pk) */
+ROWNUM as ridx
+, cp_id as cpId
+, user_id as userId
+, title as conTitle
+, remark
+, zipcode
+, floor_desc as floorDesc
+, space
+, maintenance
+, room_count as roomCount
+, price
+, move_at as moveAt
+, built_at as builtAt
+, avg_parking_space as avgParkingSpace
+, houses_count as housesCount
+, added_at as addedAt
+, updated_at as updatedAt
+, p_cpid as pCpId
+, thr_cpid as thrCpId
+FROM sb_consult_property
+WHERE thr_cpid in (select thr_cpid from sb_consult_property where user_id=#{userId})
+) t1	
+)
+SELECT
+ROWNUM as ridx
+, cpId
+, userId
+, conTitle
+, remark
+, zipcode
+, floorDesc
+, space
+, maintenance
+, roomCount
+, price
+, moveAt
+, builtAt
+, avgParkingSpace
+, housesCount
+, addedAt
+, updatedAt
+, pCpId
+, thrCpId
+FROM tree t
+WHERE #{startRow} <= t.ridx 
+and t.ridx <= #{endRow}
+START WITH t.pCpId = 0
+CONNECT BY prior t.cpId = t.pCpId
+ORDER SIBLINGS BY pCpId DESC
+		]]>
+	</select>
+	<select id="listByLegalDistrictCd"
+		parameterType="kr.starbocks.api.domain.SbConsultPropertyDO"
+		resultType="kr.starbocks.api.domain.SbConsultPropertyDO">  <!-- 다시 수정한 부분 -->
+		<![CDATA[
+WITH tree AS (
+SELECT /*+ FIRST_ROWS */
+*
+FROM (
+SELECT/*+ INDEX_DESC(sb_consult_property sb_consult_property_pk) */
+ROWNUM as ridx
+, cp_id as cpId
+, user_id as userId
+, title as conTitle
+, remark
+, zipcode
+, floor_desc as floorDesc
+, space
+, maintenance
+, room_count as roomCount
+, price
+, move_at as moveAt
+, built_at as builtAt
+, avg_parking_space as avgParkingSpace
+, houses_count as housesCount
+, added_at as addedAt
+, updated_at as updatedAt
+, p_cpid as pCpId
+, thr_cpid as thrCpId
+FROM sb_consult_property
+WHERE zipcode = #{zipcode}
+) t1	
+)
+SELECT
+ROWNUM as ridx
+, cpId
+, userId
+, conTitle
+, remark
+, zipcode
+, floorDesc
+, space
+, maintenance
+, roomCount
+, price
+, moveAt
+, builtAt
+, avgParkingSpace
+, housesCount
+, addedAt
+, updatedAt
+, pCpId
+, thrCpId
+FROM tree t
+WHERE #{startRow} <= t.ridx
+and t.ridx <= #{endRow}
+START WITH t.pCpId = 0
+CONNECT BY prior t.cpId = t.pCpId
+ORDER SIBLINGS BY pCpId DESC
+		]]>
+	</select>
+</mapper>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-config.dtd">
+<configuration>
+	<!-- DB 연결 정보 -->
+	<properties resource="mybatis/connect.properties"/>
+	<settings>
+         <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+	<environments default="development">
+		<environment id="development">
+			<transactionManager type="jdbc"/>
+			<dataSource type="POOLED">
+				<property name="driver" value="${driver}"/>
+				<property name="url" value="${url}"/>
+				<property name="username" value="${username}"/>
+				<property name="password" value="${password}"/>
+				<property value="${poolTimeToWait}" name="poolTimeToWait"/>
+			</dataSource>
+		</environment>
+	</environments>
+	<mappers>
+		<mapper resource="mybatis/sbuser.xml"/>	
+		<mapper resource="mybatis/sbagent.xml"/>
+		<mapper resource="mybatis/sbmember.xml"/>
+		<mapper resource="mybatis/sbphoto.xml"/>
+		<mapper resource="mybatis/sbinquiry.xml"/>
+		<mapper resource="mybatis/sbpayment.xml"/>
+		<mapper resource="mybatis/sboperator.xml"/>
+		<mapper resource="mybatis/sbproperty.xml"/>
+		<mapper resource="mybatis/sbstatement.xml"/>
+		<mapper resource="mybatis/sbnotification.xml"/>
+		<mapper resource="mybatis/sbaskdisclosure.xml"/>
+		<mapper resource="mybatis/sbfavoritemember.xml"/>
+		<mapper resource="mybatis/sbconsultproperty.xml"/>
+		<mapper resource="mybatis/sbfavoriteproperties.xml"/>
+		<mapper resource="mybatis/sblocationinfo.xml"/>
+	</mappers>  
+</configuration>
+
+

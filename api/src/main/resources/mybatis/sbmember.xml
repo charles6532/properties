@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd">
+<mapper namespace="sbmember">
+	<delete id="delete" parameterType="Long">
+		DELETE FROM SB_MEMBER WHERE USER_ID=#{userId}
+	</delete>
+	<insert id="add" parameterType="kr.starbocks.api.domain.SbMemberDO"><!-- 이 부분 수정했음 -->
+		INSERT INTO sb_member( address, nickname, reg_on, tel, user_id, zipcode) 
+		     VALUES( #{address, jdbcType=VARCHAR}
+		        , #{nickname, jdbcType=VARCHAR}
+		        , systimestamp
+		        , #{tel, jdbcType=VARCHAR}
+		        , #{userId}
+		        , #{zipcode, jdbcType=VARCHAR})
+	</insert>                                                                                                                         
+	<select id="data" parameterType="String" resultType="kr.starbocks.api.domain.SbMemberDO">
+		SELECT 
+		      aa.user_id as userId
+		      , aa.email
+		      , aa.passwd
+		      , aa.name
+		      , aa.added_by as addedBy
+		      , aa.added_at as addedAt
+		      , aa.updated_by as updatedBy
+		      , aa.updated_at as updatedAt
+		      , bb.nickname
+		      , bb.tel
+		      , bb.zipcode
+		      , bb.address
+		      , bb.reg_on as regOn
+				FROM SB_USER aa, SB_MEMBER bb
+				WHERE aa.USER_ID=bb.USER_ID and aa.email=#{email}
+	</select>
+	<select id="list" resultType="kr.starbocks.api.domain.SbMemberDO" parameterType="map">
+		SELECT
+		t1.*
+		FROM (
+			SELECT /*+INDEX_DESC(sb_member sb_member_pk) */ ROWNUM as rnum, t.*
+			FROM SB_MEMBER t
+		) t1
+		WHERE t1.rnum &lt;= #{end}
+		AND #{start} &lt;= t1.rnum
+	</select>
+	<select id="next" resultType="long">
+		SELECT sb_member_seq.NEXTVAL as next FROM DUAL
+	</select>
+	<update id="update" parameterType="kr.starbocks.api.domain.SbMemberDO"><!-- 수정한 부분 -->
+		UPDATE SB_MEMBER SET 
+		address=#{address, jdbcType=VARCHAR}
+		, nickname=#{nickname, jdbcType=VARCHAR}
+		, reg_on=systimestamp
+		, tel=#{tel, jdbcType=VARCHAR}
+		, zipcode=#{zipcode, jdbcType=VARCHAR} 
+		WHERE USER_ID=#{userId}
+	</update>
+	<select resultType="int" parameterType="String" id="checkId">
+		select count(*) from member where email=#{email} 
+	</select>
+	
+	<select resultType="long" id="getCount">
+		SELECT COUNT(*) 
+		FROM sb_member
+	</select>
+	<select parameterType="long" resultType="long" id="getmemCount">
+		SELECT COUNT(*) 
+		FROM sb_member m, sb_user u
+		WHERE m.user_id = u.user_id 
+		AND u.USER_ID=#{userId}
+	</select>
+</mapper>

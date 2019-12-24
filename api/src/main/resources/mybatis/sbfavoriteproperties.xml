@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd">
+<mapper namespace="sbfavoriteproperties">
+	<delete id="delete" parameterType="Long">
+		DELETE FROM SB_FAVORITE_PROPERTIES WHERE PROP_ID=#{propId}
+	</delete>
+	<insert id="add" parameterType="kr.starbocks.api.domain.SbFavoritePropertiesDO">
+		INSERT INTO sb_favorite_properties( added_at, prop_id, status_cd, updated_at, user_id) VALUES( #{addedAt}, #{propId}, #{statusCd}, #{updatedAt}, #{userId})
+	</insert>
+	
+	<select id="data" resultType="kr.starbocks.api.domain.SbFavoritePropertiesDO">
+		SELECT *
+		FROM SB_FAVORITE_PROPERTIES
+		WHERE  PROP_ID=#{propId}
+	</select>
+	<select id="list" resultType="kr.starbocks.api.domain.SbFavoritePropertiesDO" parameterType="map">
+		SELECT
+		t1.*
+		FROM (
+			SELECT /*+INDEX_DESC(sb_favorite_properties sb_favorite_properties_pk) */ ROWNUM as rnum, t.*
+			FROM SB_FAVORITE_PROPERTIES t
+		) t1
+		WHERE t1.rnum &lt;= #{end}
+		AND #{start} &lt;= t1.rnum
+	</select>
+	<select id="next" resultType="long">
+		SELECT sb_favorite_properties_seq.NEXTVAL as next FROM DUAL
+	</select>
+	<update id="update" parameterType="kr.starbocks.api.domain.SbFavoritePropertiesDO">
+		UPDATE SB_FAVORITE_PROPERTIES SET added_at=#{addedAt}, status_cd=#{statusCd}, updated_at=#{updatedAt}, WHERE PROP_ID=#{propId}
+	</update>
+	<insert id="addtoFavorite" parameterType="kr.starbocks.api.domain.SbFavoritePropertiesDO">
+		INSERT INTO sb_favorite_properties
+			( added_at, prop_id, status_cd, updated_at, user_id) 
+		VALUES
+			( SYSTIMESTAMP, #{propId}, 'ST01', SYSTIMESTAMP, #{userId})
+	</insert>
+	<select id="favprop" parameterType="kr.starbocks.api.domain.SbFavoritePropertiesDO" resultType="kr.starbocks.api.domain.SbPropertyDO">
+	SELECT
+			propId
+			, userId
+			, address
+			, title
+			, aptName
+			, price
+			, moveAt
+			, features
+			, dong
+			, hoNo
+			, photoName
+			, photoRight
+			, floor
+			, room
+		FROM
+				(
+				SELECT 
+				     ROWNUM as ridx
+				     , pp.prop_id as propId
+				     , pp.user_id as userId
+					, pp.address
+					, pp.title
+					, pp.apt_name as aptName
+					, pp.price
+					, pp.moveat as moveAt
+					, pp.features
+					, pp.dong 
+					, pp.hono as hoNo
+					, pp.added_at as addedAt
+					, pp.updated_at as updatedAt
+					, pp.photo_name as photoName
+					, pp.photo_right as photoRight
+					, pp.floor
+					, pp.room
+				FROM sb_property pp, sb_favorite_properties oo
+				WHERE
+					pp.prop_id=oo.prop_id
+				<if test="userId != null">
+				     and oo.user_id = #{userId} 
+				</if>
+				     and ROWNUM &lt;=#{endRow}
+				)
+		WHERE
+			#{startRow} &lt;=ridx
+		ORDER BY propId DESC
+	</select>
+	<delete id="deletefromFavorite" parameterType="kr.starbocks.api.domain.SbFavoritePropertiesDO">
+		DELETE FROM SB_FAVORITE_PROPERTIES WHERE PROP_ID=#{propId} and user_id=#{userId}
+	</delete>
+	<select id="addressReturnsUserIds" parameterType="long" resultType="long">
+	select user_id from SB_FAVORITE_PROPERTIES where prop_id in (select prop_id from sb_property where substr(address,28) = #{localDistrictCd})
+	</select>
+</mapper>

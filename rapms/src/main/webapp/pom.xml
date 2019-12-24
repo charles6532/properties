@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>kr.starbocks</groupId>
+	<artifactId>web</artifactId>
+	<packaging>pom</packaging>
+	<version>1.0</version>
+	<name>starbocks-web</name>
+	<url>http://www.starbocks.kr</url>
+
+	<modules>
+		<module>common</module>
+		<module>api</module>
+		<module>rapms</module>
+		<module>ams</module>
+		<module>sf</module>
+	</modules>
+
+	<properties>
+		<java-version>1.8</java-version>
+		<starbocks-version>1.0</starbocks-version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<org.springframework-version>4.3.9.RELEASE</org.springframework-version>
+		<org.springsecurity-version>4.2.0.RELEASE</org.springsecurity-version>
+		<org.aspectj-version>1.6.10</org.aspectj-version>
+		<org.slf4j-version>1.7.12</org.slf4j-version>
+		<org.common.io.version>2.6</org.common.io.version>
+		<org.common.upload.version>1.3.3</org.common.upload.version>
+		<log4j.version>1.2.17</log4j.version>
+		<ehcache.version>3.5.2</ehcache.version>
+		<junit.version>4.10</junit.version>
+		<commons-lang3.version>3.7</commons-lang3.version>
+		<commons-dbcp.version>1.4</commons-dbcp.version>
+	</properties>
+
+	<organization>
+		<name>Encore Labs</name>
+		<url>www.starbocks.kr</url>
+	</organization>
+
+	<description>Smart reverse auction for Properties in Seoul, Korea. Republic of</description>
+
+	<dependencies>
+	<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${org.springframework-version}</version>
+			<exclusions>
+				<!-- Exclude Commons Logging in favor of SLF4j -->
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- Junit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.10</version>
+			</dependency>
+
+		<!-- apaches -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons-lang3.version}</version>
+		</dependency>  
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>${commons-dbcp.version}</version>
+		</dependency>  
+		<!-- Logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${org.slf4j-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>${org.slf4j-version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${org.slf4j-version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>${log4j.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.mail</groupId>
+					<artifactId>mail</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.jms</groupId>
+					<artifactId>jms</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.jdmk</groupId>
+					<artifactId>jmxtools</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.jmx</groupId>
+					<artifactId>jmxri</artifactId>
+				</exclusion>
+			</exclusions>
+			<scope>runtime</scope>
+		</dependency>
+	</dependencies>
+	<repositories>
+		<repository>
+			<releases />
+			<snapshots>
+			<enabled>false</enabled>
+			</snapshots>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>http://repo1.maven.apache.org/maven2</url>
+		</repository>
+		<repository>
+			<id>sample-repository</id>
+			<name>local repository</name>
+			<url>file://${project.basedir}/lib</url>
+		</repository>
+	</repositories>
+</project>

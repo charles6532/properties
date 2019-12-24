@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd">
+<mapper namespace="sbnotification">
+	<select id="allList" resultType="kr.starbocks.api.domain.SbNotificationDO">
+		SELECT
+		ridx
+		, id
+		, cd
+		, subject
+		, content
+		, refId
+		, addedBy
+		, addedAt
+		, updatedAt
+		FROM (
+			SELECT /*+INDEX_DESC(t sb_notification_pk) */ 
+			ROWNUM as ridx
+			, t.id
+			, t.cd
+			, t.subject
+			, t.content
+			, t.ref_id as refId
+			, t.added_by as addedBy
+			, t.added_at as addedAt
+			, t.updated_at as updatedAt
+			FROM sb_notification t
+			WHERE t.added_by=#{userId}
+		) t1
+		WHERE t1.ridx &lt;= #{endRow}
+		AND #{startRow} &lt;= t1.ridx
+	</select>
+	<delete id="delete" parameterType="Long">
+		DELETE FROM SB_NOTIFICATION WHERE ID=#{id}
+	</delete>
+	<insert id="add" parameterType="kr.starbocks.api.domain.SbNotificationDO">
+		INSERT INTO sb_notification( added_at, added_by, cd, content, id, ref_id, subject, updated_at) VALUES( #{addedAt}, #{addedBy}, #{cd}, #{content}, #{id}, #{refId}, #{subject}, #{updatedAt})
+	</insert>
+	<select id="data" resultType="kr.starbocks.api.domain.SbNotificationDO">
+		SELECT *
+		FROM SB_NOTIFICATION
+		WHERE ID=#{id}
+	</select>
+	<select id="list" resultType="kr.starbocks.api.domain.SbNotificationDO" parameterType="map">
+		SELECT
+		t1.*
+		FROM (
+			SELECT /*+INDEX_DESC(sb_notification sb_notification_pk) */ ROWNUM as rnum, t.*
+			FROM SB_NOTIFICATION t
+		) t1
+		WHERE t1.rnum &lt;= #{end}
+		AND #{start} &lt;= t1.rnum
+	</select>
+	<select id="next" resultType="long">
+		SELECT sb_notification_seq.NEXTVAL as next FROM DUAL
+	</select>
+	<update id="update" parameterType="kr.starbocks.api.domain.SbNotificationDO">
+		UPDATE SB_NOTIFICATION SET added_at=#{addedAt}, added_by=#{addedBy}, cd=#{cd}, content=#{content}, ref_id=#{refId}, subject=#{subject}, updated_at=#{updatedAt} WHERE ID=#{id}
+	</update>
+	<insert id="sendNotification" parameterType="kr.starbocks.api.domain.SbNotificationDO">
+		INSERT INTO sb_notification(  
+		id
+		, cd
+		, subject
+		, content
+		, ref_id
+		, added_by
+		, added_at
+		, updated_at
+		) VALUES( 
+		#{id}
+		, #{cd}
+		, #{subject, jdbcType=VARCHAR}
+		, #{content}
+		, #{refId, jdbcType=VARCHAR}
+		, #{addedBy}
+		, SYSTIMESTAMP 
+		, SYSTIMESTAMP)
+	</insert>
+</mapper>

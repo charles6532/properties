@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd">
+<mapper namespace="sblocationinfo">
+	<select id="getdata"
+		parameterType="kr.starbocks.api.domain.SbPropertyDO"
+		resultType="kr.starbocks.api.domain.SbLocationInfoDO">
+		SELECT
+		city_country_cd as cityCountryCd
+		, entrance_seq as entraceSeq
+		, legal_district_cd as legalDistrictCd
+		, state
+		, city
+		, legal_district_nm as legalDistrictNm
+		, street_cd as streetCd
+		, street_nm as streetNm
+		, basement
+		, bldg_main_no as bldgMainNo
+		, bldg_sub_no as bldgSubNo
+		, bldg_nm as bldgNm
+		, zipcode
+		, bldg_usage as bldgUsage
+		, complex
+		, adm_district_nm as admDistrictNm
+		, longitude
+		, latitude
+		, lpad(street_cd,14,'0')||basement||lpad(bldg_main_no,5,'0')||lpad(bldg_sub_no,5,'0')||lpad(legal_district_cd,12,'0') as combinedKey
+		FROM SB_LOCATION_INFO
+		WHERE bldg_nm like
+		'%'||#{aptName}||'%'
+	</select>
+	<select id="selectLocId"
+		parameterType="kr.starbocks.api.domain.SbLocationInfoDO"
+		resultType="String">
+		SELECT
+		lpad(street_cd,14,'0')||basement||lpad(bldg_main_no,5,'0')||lpad(bldg_sub_no,5,'0')||lpad(legal_district_cd,12,'0')
+		as locId
+		FROM sb_location_info
+		WHERE
+		ROWNUM = 1 
+		and state like #{state}||'%' 
+		and city = #{city} 
+		and legal_district_nm = #{legalDistrictNm} 
+		<if test="bldgNm != null">
+			and bldg_nm like '%'||#{bldgNm}||'%'
+		</if>
+	</select>
+	
+	<select id="getlocationcitylist"
+		resultType="kr.starbocks.api.domain.SbLocationInfoDO"
+		parameterType="String"><!-- 수정한 부분 -->
+		SELECT
+		DISTINCT city
+		FROM sb_location_info
+		WHERE state like #{state}||'%'
+	</select>
+	<!-- <select id="getlocationdanjilist" resultType="kr.starbocks.api.domain.SbLocationInfoDO" 
+		parameterType="String">수정한 부분 SELECT DISTINCT nvl(bldg_nm,'미등록') as danji 
+		FROM sb_location_info WHERE city like #{city}||'%' and (bldg_nm like '%자이%' 
+		or bldg_nm like'%래미안%' or bldg_nm like '%힐스테이트%' or bldg_nm like '%더샵%' or 
+		bldg_nm like '%푸르지오%' or bldg_nm like '%이편한세상%' or bldg_nm like '%e편한세상%' 
+		or bldg_nm like '%더샾%' or bldg_nm like '%롯데캐슬%' or bldg_nm like '%아이파크%' 
+		or bldg_nm like '%위브%' or bldg_nm like '%skview%' or bldg_nm like '%sk뷰%' 
+		or bldg_nm like '%꿈에그린%' or bldg_nm like '%베르디움%') and bldg_usage='주택' </select> -->
+	<select id="getlocationdanjilist"
+		resultType="kr.starbocks.api.domain.SbLocationInfoDO"
+		parameterType="String"><!-- 수정한 부분 -->
+		SELECT
+		DISTINCT nvl(bldg_nm,'미등록') as bldgNm
+		FROM sb_property pp,
+		sb_location_info oo
+		WHERE pp.apt_name = oo.bldg_nm
+		and oo.city = #{city}
+	</select>
+	<select id="getaProp" parameterType="Long"
+		resultType="kr.starbocks.api.domain.SbLocationInfoDO">
+		SELECT
+		loc.city_country_cd as cityCountryCd
+		,
+		loc.entrance_seq as entranceSeq
+		, loc.legal_district_cd as
+		legalDistrictCd
+		, loc.state
+		, loc.city
+		, loc.legal_district_nm as
+		legalDistrictNm
+		, loc.street_cd as streeetCd
+		, loc.street_nm as streetNm
+		, loc.basement
+		, loc.bldg_main_no as bldgMainNo
+		, loc.bldg_sub_no as
+		bldgSubNo
+		, loc.bldg_nm as bldgNm
+		, loc.zipcode
+		, loc.bldg_usage as
+		bldgUsage
+		, loc.complex
+		, loc.adm_district_nm as admDistrictNm
+		,
+		loc.longitude
+		, loc.latitude
+		FROM sb_property pp, sb_location_info loc
+		WHERE pp.apt_name = loc.bldg_nm
+		and pp.prop_id = #{id}
+	</select>
+	<select id="getcitylist"
+		resultType="kr.starbocks.api.domain.SbLocationInfoDO"
+		parameterType="String"><!-- 수정한 부분 -->
+		SELECT
+		DISTINCT city
+		FROM sb_location_info
+		WHERE state like #{state}||'%'
+	</select>
+	<select id="getBldgNm"
+		resultType="kr.starbocks.api.domain.SbLocationInfoDO"
+		parameterType="long"><!-- 수정한 부분 -->
+		SELECT
+		DISTINCT nvl(bldg_nm,'미등록') as bldgNm
+		FROM sb_location_info
+		WHERE legal_district_cd=#{legalDistrictCd}
+		and (bldg_nm like '%자이%' 
+		or bldg_nm like'%래미안%' or bldg_nm like '%힐스테이트%' or bldg_nm like '%더샵%'  
+		or bldg_nm like '%푸르지오%' or bldg_nm like '%이편한세상%' or bldg_nm like '%e편한세상%'  
+		or bldg_nm like '%더샾%' or bldg_nm like '%롯데캐슬%' or bldg_nm like '%아이파크%' 
+		or bldg_nm like '%위브%' or bldg_nm like '%skview%' or bldg_nm like '%sk뷰%' 
+		or bldg_nm like '%꿈에그린%' or bldg_nm like '%베르디움%' or bldg_nm like '%현대슈퍼빌%' 
+		or bldg_nm like '%풍림아이원플러스%' or bldg_nm like '%서초힐스%' or bldg_nm like '%서초더샵포레%' 
+		or bldg_nm like '%서초포레스타3단지%' or bldg_nm like '%서초네이처힐4단지%' or bldg_nm like '%서초포레스타6단지%' 
+		or bldg_nm like '%방배2차현대홈타운%' or bldg_nm like '%래미안서초유니빌%' or bldg_nm like '%아크로리버파크%' 
+		or bldg_nm like '%서초이오빌%')
+		and bldg_usage like'주택%'
+	</select>
+	<select id="isemptydistrict" resultType="int"
+		parameterType="String">
+		select count(distinct city) from sb_location_info where
+		city like #{city}||'%'
+	</select>
+	<!-- <select id="getadmdistrictlist" resultType="kr.starbocks.api.domain.SbLocationInfoDO" 
+		parameterType="String"> SELECT DISTINCT nvl(adm_district_nm,'미등록') as bldgNm 
+		FROM sb_zipcode_or WHERE city like #{city}||'%' </select> -->
+	<select id="getLegalDistrict"
+		resultType="kr.starbocks.api.domain.SbLocationInfoDO"
+		parameterType="String">
+		SELECT
+		DISTINCT nvl(legal_district_nm,'미등록') as
+		legalDistrictNm
+		FROM sb_location_info
+		WHERE city like #{city}||'%'
+	</select>
+	<select id="getAddress" parameterType="long" resultType="String">
+		SELECT
+		DISTINCT(state||' '||city||' '||legal_district_nm) as address
+		FROM
+		sb_location_info where legal_district_cd=#{zipcode}
+	</select>
+	<select id="selectLegalDistrictCd" 
+		resultType="long"
+		parameterType="kr.starbocks.api.domain.SbLocationInfoDO">
+		SELECT
+		legal_district_cd as legalDistrictCd
+		FROM sb_location_info
+		WHERE state like #{state}||'%' 
+		and city = #{city}
+		and legal_district_nm like '%'||#{legalDistrictNm}||'%'
+		and rownum = 1
+	</select>
+	<select id="getmyproperties"
+		parameterType="kr.starbocks.api.domain.SbLocationInfoDO"
+		resultType="kr.starbocks.api.domain.SbPropertyDO"><!-- 수정한 부분 -->
+		SELECT
+		propId
+		, userId
+		, address
+		, title
+		, aptName
+		, price
+		, moveAt
+		, features
+		, dong
+		, hoNo
+		, photoName
+		, photoRight
+		, floor
+		, room
+		, repaired
+		, builtYear
+		, parking
+		, areaSpace
+		, entrance
+		, aspect
+		, bathroomNo
+		, statusCd
+		, numApartment
+		FROM
+		(
+		SELECT
+		/*+INDEX_DESC(pp sb_property_pk) */
+		ROWNUM as ridx
+		, pp.prop_id as propId 
+		, pp.user_id as userId
+		, pp.address
+		, pp.title
+		, pp.apt_name as aptName
+		, pp.price
+		, pp.moveat as moveAt
+		, pp.features
+		, pp.dong
+		, pp.hono as hoNo
+		, pp.added_at as addedAt
+		, pp.updated_at as updatedAt
+		, pp.photo_name as photoName	
+		, pp.photo_right as photoRight
+		, pp.floor
+		, pp.room
+		, pp.repaired
+		, pp.built_year as builtYear
+		, pp.parking
+		, pp.area_space as areaSpace
+		, pp.entrance
+		, pp.aspect
+		, pp.bathroom_no as bathroomNo
+		, pp.status_cd as statusCd
+		, pp.num_apartment as numApartment
+		FROM sb_property pp
+		WHERE
+		1=1
+		<if test="userId != null">
+			and pp.user_id = #{userId}
+		</if>
+		and ROWNUM &lt;=#{endRow}
+		)
+		WHERE
+		#{startRow} &lt;=ridx
+	</select>
+	<select id="getProperties"
+		parameterType="kr.starbocks.api.domain.SbLocationInfoDO"
+		resultType="kr.starbocks.api.domain.SbPropertyDO"><!-- 수정한 부분 -->
+		SELECT
+		propId
+		, userId
+		, address
+		, title
+		, aptName
+		, price
+		, moveAt
+		, features
+		, dong
+		, hoNo
+		, photoName
+		, photoRight
+		, floor
+		, room
+		, repaired
+		, builtYear
+		, parking
+		, areaSpace
+		, entrance
+		, aspect
+		, bathroomNo
+		, statusCd
+		, numApartment
+		FROM
+			(
+			SELECT
+			/*+INDEX_DESC(pp sb_property_pk) */
+			ROWNUM as ridx
+			, pp.prop_id as propId
+			, pp.user_id as userId
+			, pp.address
+			, pp.title
+			, pp.apt_name as aptName
+			, pp.price
+			, pp.moveat as moveAt
+			, pp.features
+			, pp.dong
+			, pp.hono as hoNo
+			, pp.added_at as addedAt
+			, pp.updated_at as updatedAt
+			, pp.photo_name as photoName	
+			, pp.photo_right as photoRight
+			, pp.floor
+			, pp.room
+			, pp.repaired
+		, pp.built_year as builtYear
+		, pp.parking
+		, pp.area_space as areaSpace
+		, pp.entrance
+		, pp.aspect
+		, pp.bathroom_no as bathroomNo
+		, pp.status_cd as statusCd
+		, pp.num_apartment as numApartment
+			FROM sb_property pp
+			WHERE
+			pp.address in ( select distinct lpad(street_cd,14,'0')||basement||lpad(bldg_main_no,5,'0')||lpad(bldg_sub_no,5,'0')||lpad(legal_district_cd,12,'0') as address from sb_location_info  
+						WHERE
+							1=1
+							<if test="state != null">
+							and state like #{state}||'%'
+							</if>
+							<if test="city != null">
+							and city=#{city}
+							</if>
+							<if test="legalDistrictNm != null">
+							and legal_district_nm=#{legalDistrictNm}
+							</if>
+						)
+			<if test="bldgNm != null">
+				and pp.apt_name like '%'||#{bldgNm}||'%'
+			</if>
+			<if test="roomCount != 0">
+				and pp.room=#{roomCount}
+			</if>
+			<if test="floorDesc != null">
+				<if test="floorDesc == 'high'">
+					and pp.floor &gt;20
+				</if>
+				<if test="floorDesc == 'medium'">
+					and pp.floor &gt;10
+					and pp.floor &lt;=20
+				</if>
+				<if test="floorDesc == 'high'">
+					and pp.floor &lt;=10
+				</if>
+			</if>
+			and pp.price &lt;=#{priceMax}
+			and #{priceMin} &lt;=pp.price
+			and ROWNUM &lt;=#{endRow}
+			)
+		WHERE
+		#{startRow} &lt;=ridx
+	</select>
+	<select id="getStateCityLegalDistrictNm" 
+		resultType="kr.starbocks.api.domain.SbDataObject"
+		parameterType="String">
+		SELECT
+		state
+		,city
+		,legal_district_nm as legalDistrictNm
+		from sb_location_info
+		WHERE to_number(substr(#{addr, jdbcType=VARCHAR},1,14)) = street_cd
+		AND to_number(substr(#{addr, jdbcType=VARCHAR},15,1)) = basement
+		AND to_number(substr(#{addr, jdbcType=VARCHAR},16,5)) = bldg_main_no
+		AND to_number(substr(#{addr, jdbcType=VARCHAR},21,5)) = bldg_sub_no
+		AND to_number(substr(#{addr, jdbcType=VARCHAR},26)) = legal_district_cd
+	</select>
+</mapper>

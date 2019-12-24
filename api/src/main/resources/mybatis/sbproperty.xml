@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd">
+<mapper namespace="sbproperty">
+	<delete id="delete" parameterType="Long">
+		DELETE FROM SB_PROPERTY WHERE PROP_ID=#{propId}
+	</delete>
+	<insert id="add" parameterType="kr.starbocks.api.domain.SbPropertyDO">
+		INSERT INTO sb_property(
+		prop_id
+		, user_id
+		, address
+		, title
+		, apt_name
+		, price
+		, moveat
+		, features
+		, dong
+		, hono
+		, added_at
+		, updated_at
+		, photo_name
+		, photo_right
+		, floor
+		, room
+		, repaired
+		, built_year
+		, parking
+		, area_space
+		, entrance
+		, aspect
+		, bathroom_no
+		, status_cd
+		, num_apartment
+		 ) 
+		VALUES(
+		#{propId} 
+		, #{userId, jdbcType=VARCHAR}
+		, #{address, jdbcType=VARCHAR}
+		, #{title, jdbcType=VARCHAR}
+		, #{bldgNm, jdbcType=VARCHAR}
+		, #{price, jdbcType=VARCHAR}
+		, to_timestamp(#{ moveAt, jdbcType=VARCHAR }, 'MM/DD/YYYY' )
+		, #{features, jdbcType=VARCHAR}
+		, #{dong, jdbcType=VARCHAR}
+		, #{hoNo, jdbcType=VARCHAR}
+		, SYSTIMESTAMP
+		, SYSTIMESTAMP
+		, #{photoName, jdbcType=VARCHAR}
+		, #{photoRight, jdbcType=VARCHAR}
+		, #{floor, jdbcType=VARCHAR}
+		, #{room, jdbcType=VARCHAR}
+		, #{repaired, jdbcType=VARCHAR}
+		, #{builtYear, jdbcType=VARCHAR}
+		, #{parking, jdbcType=VARCHAR}
+		, #{areaSpace, jdbcType=VARCHAR}
+		, #{entrance, jdbcType=VARCHAR}
+		, #{aspect, jdbcType=VARCHAR}
+		, #{bathroomNo, jdbcType=VARCHAR}
+		, #{statusCd, jdbcType=VARCHAR}
+		, #{numApartment, jdbcType=VARCHAR}
+		  )
+	</insert>
+	<select id="nextid" resultType="java.lang.Integer">
+		SELECT sb_property_seq.NEXTVAL
+		FROM DUAL
+	</select>
+	<select id="data" resultType="kr.starbocks.api.domain.SbPropertyDO">
+		SELECT *
+		FROM SB_PROPERTY
+		WHERE PROP_ID=#{propId}
+	</select>
+	<select id="list" resultType="kr.starbocks.api.domain.SbPropertyDO" parameterType="map">
+		SELECT
+		t1.*
+		FROM (
+			SELECT /*+INDEX_DESC(sb_property sb_property_pk) */ ROWNUM as rnum, t.*
+			FROM SB_PROPERTY t
+		) t1
+		WHERE t1.rnum &lt;= #{end}
+		AND #{start} &lt;= t1.rnum
+	</select>
+	<select id="next" resultType="long">
+		SELECT sb_property_seq.NEXTVAL as next FROM DUAL
+	</select>
+	<update id="update" parameterType="kr.starbocks.api.domain.SbPropertyDO">
+		UPDATE SB_PROPERTY SET 
+			address = #{address, jdbcType=VARCHAR}
+			, title = #{title,  jdbcType=VARCHAR}
+			, apt_name = #{aptName,  jdbcType=VARCHAR}
+			, price = #{price,  jdbcType=VARCHAR}
+			, moveat = TO_TIMESTAMP(#{ moveAt, jdbcType=VARCHAR }, 'MM/DD/YYYY' )
+			, features = #{features,  jdbcType=VARCHAR}
+			, dong = #{dong,  jdbcType=VARCHAR}
+			, hono = #{hoNo,  jdbcType=VARCHAR}
+			, updated_at = SYSTIMESTAMP
+			, photo_name = #{photoName,  jdbcType=VARCHAR}
+			, photo_right = #{photoRight,  jdbcType=VARCHAR}
+			, floor = #{floor,  jdbcType=VARCHAR}
+			, room = #{room,  jdbcType=VARCHAR}
+			, repaired = #{repaired,  jdbcType=VARCHAR}
+			, built_year = #{builtYear,  jdbcType=VARCHAR}
+			, parking = #{parking,  jdbcType=VARCHAR}
+			, num_apartment = #{numApartment,  jdbcType=VARCHAR}
+			, area_space = #{areaSpace,  jdbcType=VARCHAR}
+			, entrance = #{entrance,  jdbcType=VARCHAR}
+			, aspect = #{aspect,  jdbcType=VARCHAR}
+			, bathroom_no = #{bathroomNo,  jdbcType=VARCHAR}
+			WHERE PROP_ID=#{propId}
+	</update>
+	<select resultType="long" id="getCount">
+		SELECT COUNT(*) 
+		FROM sb_property
+	</select>
+	
+	<select id="getProplist" resultType="hashmap" parameterType="hashmap">
+		<![CDATA[
+		SELECT
+		t1.*
+		FROM (
+			SELECT /*+INDEX_DESC(t sb_property_pk) */ ROWNUM as rnum, t.*
+			FROM SB_PROPERTY t
+			WHERE ROWNUM <= #{pageStart} + #{perPageNum}
+		) t1
+		WHERE #{pageStart} < t1.rnum
+		]]>
+	</select>
+	<update id="updateAddress" parameterType="kr.starbocks.api.domain.SbPropertyDO">
+		UPDATE SB_PROPERTY SET 
+			address=#{address, jdbcType=VARCHAR}, updated_at=SYSTIMESTAMP 
+			WHERE apt_name like '%'||#{aptName}||'%'
+	</update>
+	<select id="dropdown" parameterType="String" resultType="String">
+		SELECT 
+		city 
+		FROM sb_zipcode_or 
+		WHERE state=#{city} 
+		GROUP BY city ORDER BY 1
+	</select><!-- 시군 불러오기 -->
+	<select id="dropdownDong" parameterType="String" resultType="String"><!-- 동 불러오기 -->
+		SELECT 
+		DISTINCT legal_district_nm 
+		FROM sb_location_info 
+		WHERE city=#{gu}
+		GROUP BY legal_district_nm ORDER BY 1
+	</select>
+	<select id="dropdownApt" parameterType="String" resultType="String">
+		SELECT DISTINCT bldg_nm 
+		FROM sb_location_info 
+		WHERE legal_district_nm =#{apt} 
+		AND ( 
+		BLDG_NM like '%아파트%' OR 
+		BLDG_NM like '%apt%' OR
+		BLDG_NM like '%단지%' OR 
+		BLDG_NM like '%롯데캐슬%' OR 
+		BLDG_NM like '%래미안%' OR 
+		BLDG_NM like '%이편한세상%' OR 
+		BLDG_NM like '%아크로빌%' OR 
+		BLDG_NM like '%두산위브%' OR 
+		BLDG_NM like '%한화%' OR 
+		BLDG_NM like '%쌍용%' OR 
+		BLDG_NM like '%아이파크%' OR 
+		BLDG_NM like '%힐스테이트%' OR 
+		BLDG_NM like '%푸르지오%' OR 
+		BLDG_NM like '%해링턴%' OR 
+		BLDG_NM like '%파라곤%' OR 
+		BLDG_NM like '%빌리지%' OR 
+		BLDG_NM like '%하이페리온%' OR 
+		BLDG_NM like '%상지리츠빌%' OR 
+		BLDG_NM like '%브라운스톤%' OR 
+		BLDG_NM like '%자이%'
+		)
+		AND BLDG_USAGE = '주택' ORDER BY bldg_nm
+	</select>
+	<select id="detail" parameterType="Long" resultType="kr.starbocks.api.domain.SbPropertyDO"><!-- 매물 상세보기 -->
+		SELECT 
+		*
+		FROM sb_property 
+		WHERE prop_id=#{id}
+	</select>
+	<select id="myprop" parameterType="Long" resultType="kr.starbocks.api.domain.SbPropertyDO">
+		SELECT 
+		/*+INDEX_DESC(sb_property sb_property_pk) */
+		prop_id as propId
+		, user_id as userId
+		, address
+		, title
+		, apt_name as aptName
+		, price 
+		, moveat as moveAt
+		, features
+		, dong
+		, hoNo
+		, added_at as addedAt
+		, updated_at as updatedAt
+		, photo_name as photoName
+		, photo_right as photoRight
+		, floor
+		, room
+		, repaired
+		, built_year as builtYear
+		, parking
+		, area_space as areaSpace
+		, entrance
+		, aspect
+		, bathroom_no as bathroomNo
+		, status_cd as statusCd
+		, num_apartment as numApartment
+		FROM sb_property 
+		WHERE user_id=#{userId}
+	</select>
+	<update id="complete" parameterType="Long">
+		UPDATE sb_property SET status_cd='PR11' WHERE prop_id=#{propId}
+	</update>
+	<select id="searchProp" resultType="kr.starbocks.api.domain.SbPropertyDO">
+		SELECT *
+		FROM sb_property p, sb_location_info l
+		WHERE p.apt_name=l.bldg_nm 
+		AND (
+		l.state=#{state} AND 
+		l.city=#{city} AND 
+		l.legal_district_nm=#{legalDistrictNm} AND 
+		l.bldg_nm=#{aptName, jdbcType=VARCHAR} AND 
+		l.bldg_usage='주택' )
+		AND p.num_apartment > #{numApartment, jdbcType=NUMERIC}
+	</select>
+	<select id="getdistrictlist"
+	resultType="kr.starbocks.api.domain.SbLocationInfoDO"
+	parameterType="long"><!-- 수정한 부분 -->
+	SELECT
+	DISTINCT nvl(pp.apt_name,'미등록') as bldgNm
+	FROM sb_location_info oo, sb_property pp
+	WHERE pp.address =
+	lpad(oo.street_cd,14,'0')||oo.basement||lpad(oo.bldg_main_no,5,'0')||lpad(oo.bldg_sub_no,5,'0')||lpad(oo.legal_district_cd,12,'0')
+	and oo.legal_district_cd=#{legalDistrictCd}
+	</select>
+	<select id="selectMyProperties"
+		parameterType="kr.starbocks.api.domain.SbConsultPropertyDO"
+		resultType="kr.starbocks.api.domain.SbPropertyDO"><!-- 수정한 부분 -->
+SELECT
+ROWNUM as ridx
+, propId
+, userId
+, address
+, title
+, aptName
+, price
+, moveAt
+, features
+, dong
+, hoNo
+, photoName
+, photoRight
+, floor
+, room
+, repaired
+, builtYear
+, parking
+, areaSpace
+, entrance
+, aspect
+, bathroomNo
+, statusCd
+, numApartment
+, state
+, city
+, legalDistrictNm
+FROM
+	(
+	SELECT
+	/*+INDEX_DESC(pp sb_property_pk) */
+	pp.prop_id as propId
+	, pp.user_id as userId
+	, pp.address
+	, pp.title
+	, pp.apt_name as aptName
+	, pp.price 
+	, pp.moveat as moveAt
+	, pp.features
+	, pp.dong
+	, pp.hoNo
+	, pp.added_at as addedAt
+	, pp.updated_at as updatedAt
+	, pp.photo_name as photoName
+	, pp.photo_right as photoRight
+	, pp.floor
+	, pp.room
+	, pp.repaired
+	, pp.built_year as builtYear
+	, pp.parking
+	, pp.area_space as areaSpace
+	, pp.entrance
+	, pp.aspect
+	, pp.bathroom_no as bathroomNo
+	, pp.status_cd as statusCd
+	, pp.num_apartment as numApartment
+	, oo.state as state
+	, oo.city as city
+	, oo.legal_district_nm as legalDistrictNm
+	FROM sb_property pp, sb_location_info oo
+	WHERE
+	pp.address = lpad(oo.street_cd,14,'0')||oo.basement||lpad(oo.bldg_main_no,5,'0')||lpad(oo.bldg_sub_no,5,'0')||lpad(oo.legal_district_cd,12,'0') 
+	<if test="zipcode != null">
+		and substr(pp.address,28)=#{zipcode, jdbcType=VARCHAR}
+	</if>
+	<if test="space != null">
+		and area_space &lt;= to_number(#{space, jdbcType=VARCHAR})
+	</if>
+	<if test="price != 0">
+		and price &lt;=#{price, jdbcType=VARCHAR}*10000
+	</if>
+	<if test="floorDesc != null">
+				<if test="floorDesc == 'high'">
+					and floor &gt;20
+				</if>
+				<if test="floorDesc == 'medium'">
+					and floor &gt;10
+					and floor &lt;=20
+				</if>
+				<if test="floorDesc == 'high'">
+					and floor &lt;=10
+				</if>
+	</if>
+	<if test="maintenance != null">
+		and repaired like #{maintenance, jdbcType=VARCHAR}||'%'
+	</if>
+	<if test="builtAt != null">
+		and built_year &gt;= to_number(#{builtAt, jdbcType=VARCHAR})
+	</if>
+	<if test="roomCount != 0">
+		and room &gt;=#{roomCount, jdbcType=VARCHAR}
+	</if>
+	<if test="avgParkingSpace != 0">
+		<if test="housesCount != 0">
+		and parking &gt;=(#{avgParkingSpace, jdbcType=VARCHAR}*#{housesCount, jdbcType=VARCHAR})
+		</if>
+	</if>
+	<if test="housesCount != 0">
+		and num_apartment &gt;=#{housesCount, jdbcType=VARCHAR}
+	</if>
+	)
+WHERE
+ROWNUM &lt;=#{endRow}
+and #{startRow} &lt;= ROWNUM
+	</select>
+	<select id="longArrayProperties"
+		parameterType="long"
+		resultType="kr.starbocks.api.domain.SbPropertyDO">
+SELECT
+ROWNUM as ridx
+, pp.prop_id as propId
+, pp.user_id as userId
+, pp.address
+, pp.title
+, pp.apt_name as aptName
+, pp.price 
+, pp.moveat as moveAt
+, pp.features
+, pp.dong
+, pp.hoNo
+, pp.added_at as addedAt
+, pp.updated_at as updatedAt
+, pp.photo_name as photoName
+, pp.photo_right as photoRight
+, pp.floor
+, pp.room
+, pp.repaired
+, pp.built_year as builtYear
+, pp.parking
+, pp.area_space as areaSpace
+, pp.entrance
+, pp.aspect
+, pp.bathroom_no as bathroomNo
+, pp.status_cd as statusCd
+, pp.num_apartment as numApartment
+, oo.state as state
+, oo.city as city
+, oo.legal_district_nm as legalDistrictNm
+FROM sb_property pp, sb_location_info oo
+WHERE
+pp.address = lpad(oo.street_cd,14,'0')||oo.basement||lpad(oo.bldg_main_no,5,'0')||lpad(oo.bldg_sub_no,5,'0')||lpad(oo.legal_district_cd,12,'0') 
+and pp.prop_id=#{propId}
+	</select>
+	<select id="getPropLocVO" 
+		parameterType="long"
+		resultType="kr.starbocks.api.value.PropertyDetailVO">
+		SELECT
+ROWNUM as ridx
+, pp.prop_id as propId
+, pp.user_id as userId
+, pp.address
+, pp.title
+, pp.apt_name as aptName
+, pp.price 
+, pp.moveat as moveAt
+, pp.features
+, pp.dong
+, pp.hoNo
+, pp.added_at as addedAt
+, pp.updated_at as updatedAt
+, pp.photo_name as photoName
+, pp.photo_right as photoRight
+, pp.floor
+, pp.room
+, pp.repaired
+, pp.built_year as builtYear
+, pp.parking
+, pp.area_space as areaSpace
+, pp.entrance
+, pp.aspect
+, pp.bathroom_no as bathroomNo
+, pp.status_cd as statusCd
+, pp.num_apartment as numApartment
+, oo.state as state
+, oo.city as city
+, oo.legal_district_nm as legalDistrictNm
+, oo.city_country_cd as cityCountryCd
+		, oo.entrance_seq as entraceSeq
+		, oo.legal_district_cd as legalDistrictCd
+		, oo.street_cd as streetCd
+		, oo.street_nm as streetNm
+		, oo.basement
+		, oo.bldg_main_no as bldgMainNo
+		, oo.bldg_sub_no as bldgSubNo
+		, oo.bldg_nm as bldgNm
+		, oo.zipcode
+		, oo.bldg_usage as bldgUsage
+		, oo.complex
+		, oo.adm_district_nm as admDistrictNm
+		, oo.longitude
+		, oo.latitude
+FROM sb_property pp, sb_location_info oo
+WHERE
+pp.address = lpad(oo.street_cd,14,'0')||oo.basement||lpad(oo.bldg_main_no,5,'0')||lpad(oo.bldg_sub_no,5,'0')||lpad(oo.legal_district_cd,12,'0') 
+and pp.prop_id=#{propId}
+	</select>
+	<select id="throwPropIds"
+		resultType="kr.starbocks.api.domain.SbPropertyDO">
+SELECT
+ROWNUM as ridx
+, pp.prop_id as propId
+, pp.user_id as userId
+, pp.address
+, pp.title
+, pp.apt_name as aptName
+, pp.price 
+, pp.moveat as moveAt
+, pp.features
+, pp.dong
+, pp.hoNo
+, pp.added_at as addedAt
+, pp.updated_at as updatedAt
+, pp.photo_name as photoName
+, pp.photo_right as photoRight
+, pp.floor
+, pp.room
+, pp.repaired
+, pp.built_year as builtYear
+, pp.parking
+, pp.area_space as areaSpace
+, pp.entrance
+, pp.aspect
+, pp.bathroom_no as bathroomNo
+, pp.status_cd as statusCd
+, pp.num_apartment as numApartment
+, oo.state as state
+, oo.city as city
+, oo.legal_district_nm as legalDistrictNm
+FROM sb_property pp, sb_location_info oo
+WHERE
+pp.address = lpad(oo.street_cd,14,'0')||oo.basement||lpad(oo.bldg_main_no,5,'0')||lpad(oo.bldg_sub_no,5,'0')||lpad(oo.legal_district_cd,12,'0')
+and pp.prop_id in 
+		<foreach item="propIds" index="index" collection="array"
+		             open="(" separator="," close=")">
+		        #{propIds}
+		</foreach> 
+	</select>
+	
+</mapper>

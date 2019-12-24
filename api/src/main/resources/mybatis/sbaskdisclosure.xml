@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd">
+<mapper namespace="sbaskdisclosure">
+	<delete id="delete" parameterType="Long">
+		DELETE FROM SB_ASK_DISCLOSURE WHERE ASK_ID=#{askId}
+	</delete>
+	<insert id="add" parameterType="kr.starbocks.api.domain.SbAskDisclosureDO">
+		INSERT INTO sb_ask_disclosure( 
+		ask_id
+		, prop_id
+		, public_cd
+		, user_id
+		, added_by
+		, added_at
+		, updated_at
+		, p_askid
+		, thr_askid
+		) 
+		VALUES
+		( 
+		#{askId}
+		, #{propId, jdbcType=VARCHAR}
+		, 'DS01'
+		, #{userId}
+		, #{addedBy}
+		, SYSTIMESTAMP
+		, SYSTIMESTAMP
+		, 0
+		, #{askId}
+		)
+	</insert>
+	
+	<select id="data" resultType="kr.starbocks.api.domain.SbAskDisclosureDO">
+		SELECT *
+		FROM SB_ASK_DISCLOSURE
+		WHERE  ASK_ID=#{askId}
+	</select>
+	<select id="list" resultType="kr.starbocks.api.domain.SbAskDisclosureDO" parameterType="map">
+		SELECT
+		t1.*
+		FROM (
+			SELECT /*+INDEX_DESC(sb_ask_disclosure sb_ask_disclosure_pk) */ ROWNUM as rnum, t.*
+			FROM SB_ASK_DISCLOSURE t
+		) t1
+		WHERE t1.rnum &lt;= #{end}
+		AND #{start} &lt;= t1.rnum
+	</select>
+	<select id="next" resultType="long">
+		SELECT sb_ask_disclosure_seq.NEXTVAL as next FROM DUAL
+	</select>
+	<update id="update" parameterType="kr.starbocks.api.domain.SbAskDisclosureDO">
+		UPDATE SB_ASK_DISCLOSURE SET added_at=#{addedAt}, added_by=#{addedBy}, prop_id=#{propId}, public_cd=#{publicCd}, updated_at=#{updatedAt}, user_id=#{userId} WHERE ASK_ID=#{askId}
+	</update>
+	<select id="getAskDislistAddedBy" parameterType="kr.starbocks.api.domain.SbAskDisclosureDO" resultType="kr.starbocks.api.domain.SbAskDisclosureDO">  <!-- 다시 수정한 부분 -->
+		<![CDATA[
+WITH tree AS (
+SELECT /*+ FIRST_ROWS */
+*
+FROM (
+SELECT/*+ INDEX_DESC(sb_ask_disclosure sb_ask_disclosure_pk) */
+ROWNUM as ridx
+, ad.ask_id as askId
+, ad.p_askid as pAskId
+, ad.thr_askid as thrAskId
+, ad.prop_id as propId
+, ad.public_cd as publicCd
+, ad.user_id as userId
+, ad.added_by as addedBy
+, ad.added_at as addedAt
+, ad.updated_at as updatedAt
+, u.name as name
+FROM sb_ask_disclosure ad, sb_user u
+WHERE ad.added_by=u.user_id
+AND ad.thr_askid in (select thr_askid from sb_ask_disclosure where added_by=#{addedBy})
+) t1	
+)
+SELECT
+ROWNUM as ridx
+, askId
+, pAskId
+, thrAskId
+, propId
+, publicCd
+, userId
+, addedBy
+, addedAt
+, updatedAt
+, name
+FROM tree t
+WHERE #{startRow} <= t.ridx 
+AND t.ridx <= #{endRow}
+START WITH t.pAskId = 0
+CONNECT BY prior t.askId = t.pAskId
+ORDER SIBLINGS BY thrAskId DESC, pAskId DESC
+		]]>
+	</select>
+	<select resultType="int" id="askDisclosureGetCount">
+		SELECT COUNT(*) 
+		FROM sb_ask_disclosure
+	</select>
+	<select id="getdata" parameterType="long" resultType="kr.starbocks.api.domain.SbAskDisclosureDO">
+		SELECT 
+		ROWNUM as ridx
+		, ad.ask_id as askId
+		, ad.p_askid as pAskId
+		, ad.thr_askid as thrAskId
+		, ad.prop_id as propId
+		, ad.public_cd as publicCd
+		, ad.user_id as userId
+		, ad.added_by as addedBy
+		, ad.added_at as addedAt
+		, ad.updated_at as updatedAt
+		, u.name as name
+		FROM SB_ASK_DISCLOSURE ad, SB_USER u
+		WHERE ad.added_by = u.user_id
+		AND ad.ASK_ID=#{askId}
+	</select>
+	<insert id="sfaskdisreply" parameterType="kr.starbocks.api.domain.SbAskDisclosureDO">
+		INSERT INTO SB_ASK_DISCLOSURE ( 
+		ask_id
+		, prop_id
+		, public_cd
+		, user_id
+		, added_by
+		, added_at
+		, updated_at
+		, p_askid
+		, thr_askid
+		) 
+		VALUES
+		( 
+		#{askId}
+		, #{propId}
+		, #{publicCd}
+		, #{addedBy}
+		, #{addedBy}
+		, SYSTIMESTAMP
+		, SYSTIMESTAMP
+		, #{pAskId}
+		, #{thrAskId}
+		)
+	</insert>
+	<select id="getAskDislistByUser" parameterType="kr.starbocks.api.domain.SbAskDisclosureDO" resultType="kr.starbocks.api.domain.SbAskDisclosureDO">  <!-- 다시 수정한 부분 -->
+		<![CDATA[
+WITH tree AS (
+SELECT /*+ FIRST_ROWS */
+*
+FROM (
+SELECT/*+ INDEX_DESC(ad sb_ask_disclosure_pk) */
+ROWNUM as ridx
+, ad.ask_id as askId
+, ad.prop_id as propId
+, ad.public_cd as publicCd
+, ad.user_id as userId
+, ad.added_by as addedBy
+, ad.added_at as addedAt
+, ad.updated_at as updatedAt
+, ad.p_askid as pAskId
+, ad.thr_askid as thrAskId
+, u.name as name
+FROM sb_ask_disclosure ad, sb_user u
+WHERE ad.added_by=u.user_id
+AND ad.thr_askid in (select thr_askid from sb_ask_disclosure where user_id=#{userId})
+) t1
+)
+SELECT
+ROWNUM as ridx
+, askId
+, pAskId
+, thrAskId
+, propId
+, publicCd
+, userId
+, addedBy
+, addedAt
+, updatedAt
+, name
+FROM tree t
+WHERE #{startRow}<= t.ridx
+AND t.ridx<=#{endRow}
+START WITH t.pAskId = 0
+CONNECT BY prior t.askId = t.pAskId
+ORDER SIBLINGS BY thrAskId DESC, pAskId DESC
+		]]>
+	</select>
+	<select id="getProperties"
+		resultType="kr.starbocks.api.domain.SbPropertyDO">
+SELECT
+ROWNUM as ridx
+, pp.prop_id as propId
+, pp.user_id as userId
+, pp.address
+, pp.title
+, pp.apt_name as aptName
+, pp.price 
+, pp.moveat as moveAt
+, pp.features
+, pp.dong
+, pp.hoNo
+, pp.added_at as addedAt
+, pp.updated_at as updatedAt
+, pp.photo_name as photoName
+, pp.photo_right as photoRight
+, pp.floor
+, pp.room
+, pp.repaired
+, pp.built_year as builtYear
+, pp.parking
+, pp.area_space as areaSpace
+, pp.entrance
+, pp.aspect
+, pp.bathroom_no as bathroomNo
+, pp.status_cd as statusCd
+, pp.num_apartment as numApartment
+, oo.state as state
+, oo.city as city
+, oo.legal_district_nm as legalDistrictNm
+FROM sb_property pp, sb_location_info oo
+WHERE
+pp.address = lpad(oo.street_cd,14,'0')||oo.basement||lpad(oo.bldg_main_no,5,'0')||lpad(oo.bldg_sub_no,5,'0')||lpad(oo.legal_district_cd,12,'0')
+and pp.prop_id in 
+		<foreach item="propIds" index="index" collection="array"
+		             open="(" separator="," close=")">
+		        #{propIds}
+		</foreach> 
+	</select>
+</mapper>

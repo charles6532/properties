@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+									http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+	version="2.0">
+
+	<description>Starbocks Tag library based on JSTL 1.2</description>
+	<display-name>Tag library for Starbocks functions</display-name>
+	<tlib-version>1.0</tlib-version>
+	<short-name>sb</short-name>
+
+	<function>
+		<description>get the ID String</description>
+		<name>getIdStr</name>
+		<function-class>kr.starbocks.util.StarbocksUtil</function-class>
+		<function-signature>java.lang.String getIdStr(long)</function-signature>
+		<example>${sb:getIdStr(long)}</example>
+	</function>
+
+	<function>
+		<description>get the ID</description>
+		<name>getId</name>
+		<function-class>kr.starbocks.util.StarbocksUtil</function-class>
+		<function-signature>long getId(java.lang.String)</function-signature>
+		<example>${sb:getId(String)}</example>
+	</function>
+	
+	<function>
+		<description>encryption</description>
+		<name>encrypt</name>
+		<function-class>kr.starbocks.util.CryptoUtil</function-class>
+		<function-signature>String encrypt(java.lang.String,java.lang.String)</function-signature>
+		<example>${sb:encrypt(String,String)}</example>
+	</function>
+	
+	
+	<function>
+		<description>get the image url path</description>
+		<name>getImageUrl</name>
+		<function-class>kr.starbocks.util.StarbocksUtil</function-class>
+		<function-signature>java.lang.String getImageUrl(long)</function-signature>
+		<example>${sb:getImageUrl(long)}</example>
+	</function>
+
+	<function>
+		<description>get the pagination </description>
+		<name>getPagination</name>
+		<function-class>kr.starbocks.util.StarbocksUtil</function-class>
+		<function-signature>java.lang.String getPagination(long,int,int,int)</function-signature>
+		<example>${sb:getPagination(long,int,int,int)}</example>
+	</function>
+	
+	<function>
+       <description>get the image url path</description>
+       <name>getPhotoIdUrl</name>
+       <function-class>kr.starbocks.util.ImageUtil</function-class>
+       <function-signature>java.lang.String getPhotoUrl(long)</function-signature>
+       <example>${sb:getPhotoIdUrl(long)}</example>
+   </function>
+   <function>
+       <description>get the image url path</description>
+       <name>getPhotoIdStrUrl</name>
+       <function-class>kr.starbocks.util.ImageUtil</function-class>
+       <function-signature>java.lang.String getPhotoUrl(java.lang.String)</function-signature>
+       <example>${sb:getPhotoIdStrUrl(String)}</example>
+   </function>
+   
+   <function>
+		<description>get the image url path</description>
+		<name>getPhotoUrl</name>
+		<function-class>kr.starbocks.util.ImageUtil</function-class>
+		<function-signature>java.lang.String getPhotoUrl(long)</function-signature>
+		<example>${sb:getPhotoUrl(long)}</example>
+	</function>
+	<function>
+		<description>get the Thumbnail url path</description>
+		<name>getThumbnailPhotoUrl</name>
+		<function-class>kr.starbocks.util.ImageUtil</function-class>
+		<function-signature>java.lang.String getThumbnailPhotoUrl(long)</function-signature>
+		<example>${sb:getThumbnailPhotoUrl(long)}</example>
+	</function>
+</taglib>

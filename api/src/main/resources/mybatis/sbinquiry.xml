@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd">
+<mapper namespace="sbinquiry">
+	<delete id="delete" parameterType="Long">
+		DELETE FROM SB_INQUIRY WHERE ID=#{id}
+	</delete>
+	<insert id="add" parameterType="kr.starbocks.api.domain.SbInquiryDO">
+		INSERT INTO sb_inquiry( added_at, added_by, type_cd, content, id, ref_id, subject, updated_at) VALUES( #{addedAt}, #{addedBy}, #{typeCd}, #{content}, #{id}, #{refId}, #{subject}, #{updatedAt})
+	</insert>
+	
+	<select id="data" resultType="kr.starbocks.api.domain.SbInquiryDO">
+		SELECT *
+		FROM SB_INQUIRY
+		WHERE ID=#{id}
+	</select>
+	<select id="list" resultType="kr.starbocks.api.domain.SbInquiryDO" parameterType="map">
+		<!-- SELECT
+		t1.*
+		FROM (
+			SELECT /*+INDEX_DESC(sb_inquiry sb_inquiry_pk) */ ROWNUM as rnum, t.*
+			FROM SB_INQUIRY t
+		) t1
+		WHERE t1.rnum &lt;= #{end}
+		AND #{start} &lt;= t1.rnum -->
+		<![CDATA[
+		SELECT 
+		*
+		FROM (
+			SELECT 
+			ROWNUM as ridx,
+        	t2.*
+        	FROM(
+            	 SELECT
+                 	u.user_id
+					,i.id
+               	 	,u.name
+                	,i.subject
+                	,i.content
+                	,i.added_by
+                	,i.added_at
+                	,i.updated_at
+            	FROM sb_inquiry i, sb_agent m, sb_user u
+	    		WHERE u.user_id = m.user_id
+            	AND u.user_id = i.added_by
+            	ORDER BY i.added_at DESC
+            	)t2
+			WHERE ROWNUM <= #{end}
+			)t1
+		WHERE #{start} <= t1.ridx
+		]]>
+	</select>
+	<select id="next" resultType="long">
+		SELECT sb_inquiry_seq.NEXTVAL as next FROM DUAL    <!-- DUAL을 DUAL로 바꿈 -->
+	</select>
+	<update id="update" parameterType="kr.starbocks.api.domain.SbInquiryDO">
+		UPDATE SB_INQUIRY SET added_at=#{addedAt}, added_by=#{addedBy}, type_cd=#{typeCd}, content=#{content}, ref_id=#{refId}, subject=#{subject}, updated_at=#{updatedAt} WHERE ID=#{id}
+	</update>
+	<select resultType="long" id="oneinqgetCount">
+		SELECT COUNT(*) 
+		FROM sb_inquiry 
+		WHERE type_cd = #{typeCd}
+	</select>
+	<select resultType="long" id="getComplainCount">
+		SELECT COUNT(*) 
+		FROM sb_inquiry 
+		WHERE type_cd = #{typeCd}
+	</select>
+	
+	<select resultType="int" id="getCount">
+		SELECT COUNT(*) 
+		FROM sb_inquiry 
+	</select>
+	
+	<select id="getinqlist" resultType="hashmap" parameterType="hashmap">
+	<![CDATA[
+		SELECT 
+		*
+		FROM (
+			SELECT 
+			ROWNUM as ridx,
+        	t2.*
+        	FROM(
+            	 SELECT
+                 	u.user_id
+					,i.id
+               	 	,u.name
+                	,i.subject
+                	,i.content
+                	,i.added_by
+                	,i.added_at
+                	,i.updated_at
+            	FROM sb_inquiry i, sb_user u
+	    	WHERE u.user_id = i.added_by
+            	AND i.type_cd = 'IT02'
+            	ORDER BY i.added_at DESC
+            	)t2
+			WHERE ROWNUM <= #{pageStart}+#{perPageNum}
+			)t1
+		WHERE #{pageStart} < t1.ridx
+		]]>
+	</select>
+	<select id="getComplainlist" resultType="hashmap" parameterType="hashmap">
+	<![CDATA[
+		SELECT 
+		*
+		FROM (
+			SELECT 
+			ROWNUM as ridx,
+        	t2.*
+        	FROM(
+            	 SELECT
+                 	u.user_id
+					,i.id
+               	 	,u.name
+                	,i.subject
+                	,i.content
+                	,i.added_by
+                	,i.added_at
+                	,i.updated_at
+            	FROM sb_inquiry i, sb_user u
+	    	WHERE u.user_id = i.added_by
+            	AND i.type_cd = 'IT21'
+            	ORDER BY i.added_at DESC
+            	)t2
+			WHERE ROWNUM <= #{pageStart}+#{perPageNum}
+			)t1
+		WHERE #{pageStart} < t1.ridx
+		]]>
+	</select>
+	<select id="onetoinq" resultType="hashmap" parameterType="long">
+		SELECT 
+			u.user_id
+			,i.subject
+			,u.name
+			,i.content
+			,u.email
+		FROM sb_inquiry i, sb_user u
+		WHERE i.id=#{id}
+		AND i.type_cd = 'IT02'
+		AND i.added_by = u.user_id
+	</select>
+	<select id="complaindetail" resultType="hashmap" parameterType="long">
+		SELECT 
+			u.user_id
+			,i.subject
+			,u.name
+			,i.content
+			,u.email
+		FROM sb_inquiry i, sb_user u
+		WHERE i.id=#{id}
+		AND i.type_cd = 'IT21'
+		AND i.added_by = u.user_id
+	</select>
+	<insert id="sfadd" parameterType="kr.starbocks.api.domain.SbInquiryDO"><!-- sf추가한 부분 -->
+		INSERT INTO sb_inquiry 
+		VALUES
+		( 
+		#{id}
+		, 0
+		, #{id}
+		, #{refId, jdbcType=VARCHAR}
+		, 'IT01'
+		, #{subject, jdbcType=VARCHAR}
+		, #{content, jdbcType=VARCHAR}
+		, #{addedBy, jdbcType=VARCHAR}
+		, SYSTIMESTAMP
+		, SYSTIMESTAMP
+		, #{nickname, jdbcType=VARCHAR}
+		, #{email, jdbcType=VARCHAR}
+		, #{tel, jdbcType=VARCHAR}
+		, #{propId, jdbcType=VARCHAR} 
+		)
+	</insert>
+	<insert id="sfreply" parameterType="kr.starbocks.api.domain.SbInquiryDO"><!-- sf수정한 부분 -->
+		INSERT INTO sb_inquiry 
+		VALUES
+		( 
+		#{id}
+		, #{pId}
+		, #{thrId}
+		, #{refId}
+		, 'IT01'
+		, #{subject}
+		, #{content}
+		, #{addedBy}
+		, SYSTIMESTAMP
+		, SYSTIMESTAMP
+		, #{nickname, jdbcType=VARCHAR}
+		, #{email}
+		, #{tel}
+		, #{propId}
+		)
+	</insert>
+	<select resultType="int" id="inquirygetcount">
+		SELECT COUNT(*) 
+		FROM sb_inquiry 
+	</select>
+	<select id="inquirylistByPropId" parameterType="kr.starbocks.api.domain.SbInquiryDO" resultType="kr.starbocks.api.domain.SbInquiryDO">  <!-- 다시 수정한 부분 -->
+		<![CDATA[
+WITH tree AS (
+SELECT /*+ FIRST_ROWS */
+*
+FROM (
+SELECT/*+ INDEX_DESC(sb_inquiry sb_inquiry_pk) */
+ROWNUM as ridx
+, id
+, p_id as pId
+, thr_id as thrId
+, ref_id as refId
+, type_cd as typeCd
+, subject
+, content
+, added_by as addedBy
+, added_at as addedAt
+, updated_at as updatedAt
+, nickname
+, email
+, tel
+, prop_id as propId
+FROM sb_inquiry
+WHERE thr_id in (select thr_id from sb_inquiry where prop_id in (select prop_id from sb_property where user_id=#{userId}))
+) t1	
+)
+SELECT
+ROWNUM as ridx
+, id
+, pId
+, thrId
+, refId
+, typeCd
+, subject
+, content
+, addedBy
+, addedAt
+, updatedAt 
+, nickname
+, email
+, tel
+, propId
+FROM tree t
+WHERE #{startRow}<=t.ridx
+and t.ridx<=#{endRow}
+START WITH t.pId = 0
+CONNECT BY prior t.id = t.pId
+ORDER SIBLINGS BY thrId DESC,pId DESC
+		]]>
+	</select>
+	<select id="inquirylistByUserId" parameterType="kr.starbocks.api.domain.SbInquiryDO" resultType="kr.starbocks.api.domain.SbInquiryDO">  <!-- 다시 수정한 부분 -->
+		<![CDATA[
+WITH tree AS (
+SELECT /*+ FIRST_ROWS */
+*
+FROM 
+(
+       SELECT/*+ INDEX_DESC(sb_inquiry sb_inquiry_pk) */
+         ROWNUM as ridx
+         ,id
+         , p_id as pId
+         , thr_id as thrId
+         , ref_id as refId
+         , type_cd as typeCd
+         , subject
+         , content
+         , added_by as addedBy
+         , added_at as addedAt
+         , updated_at as updatedAt
+         , nickname
+         , email
+         , tel
+        , prop_id as propId
+        FROM sb_inquiry
+        WHERE thr_id in (select thr_id from sb_inquiry where added_by=#{userId})
+) t1	
+)
+SELECT
+ROWNUM as ridx
+, id
+, pId
+, thrId
+, refId
+, typeCd
+, subject
+, content
+, addedBy
+, addedAt
+, updatedAt 
+, nickname
+, email
+, tel
+, propId
+FROM tree t
+WHERE #{startRow}<=t.ridx
+and t.ridx<=#{endRow}
+START WITH t.pId = 0
+CONNECT BY prior t.id = t.pId
+ORDER SIBLINGS BY thrId DESC,pId DESC
+		]]>
+	</select>
+</mapper>

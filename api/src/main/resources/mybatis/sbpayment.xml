@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd">
+<mapper namespace="sbpayment">
+	<delete id="delete" parameterType="Long">
+		DELETE FROM SB_PAYMENT WHERE
+		PAYMENT_ID=#{paymentId}
+	</delete>
+	<insert id="add"
+		parameterType="kr.starbocks.api.domain.SbPaymentDO">
+		INSERT INTO sb_payment( payment_id, user_id, amount, payed_at, status_cd,
+		added_at, updated_at )
+		VALUES( sb_payment_seq.nextval, #{userId}, #{amount}, systimestamp, 'TX00',
+		systimestamp, systimestamp )
+	</insert>
+	<select id="data"
+		resultType="kr.starbocks.api.domain.SbPaymentDO">
+		SELECT *
+		FROM SB_PAYMENT
+		WHERE PAYMENT_ID=#{paymentId}
+	</select>
+	<select id="list"
+		resultType="kr.starbocks.api.domain.SbPaymentDO" parameterType="map">
+		SELECT
+		t1.*
+		FROM (
+		SELECT /*+INDEX_DESC(sb_payment sb_payment_pk) */ ROWNUM as rnum, t.*
+		FROM SB_PAYMENT t
+		) t1
+		WHERE t1.rnum &lt;= #{end}
+		AND #{start} &lt;= t1.rnum
+	</select>
+	<select id="next" resultType="long">
+		SELECT sb_payment_seq.NEXTVAL as
+		next FROM DUAL
+	</select>
+	<update id="update"
+		parameterType="kr.starbocks.api.domain.SbPaymentDO">
+		UPDATE SB_PAYMENT SET added_at=#{addedAt},
+		amount_of_payment=#{amountOfPayment}, payment_date=#{paymentDate},
+		payment_status_code=#{paymentStatusCode}, updated_at=#{updatedAt},
+		user_id=#{userId} WHERE PAYMENT_ID=#{paymentId}
+	</update>
+	<insert id="rechargeAdd"
+		parameterType="kr.starbocks.api.domain.SbStatementDO">
+		INSERT INTO sb_payment
+		( 
+		payment_id
+		, user_id
+		, amount
+		, payed_at
+		, status_cd
+		, added_at
+		, updated_at 
+		)
+		VALUES( 
+		#{paymentId}
+		, #{userId}
+		, #{amount}
+		, systimestamp
+		, 'PS00'
+		, systimestamp
+		, systimestamp 
+		)
+	</insert>
+	<insert id="payingOut"
+		parameterType="kr.starbocks.api.domain.SbStatementDO">
+		INSERT INTO sb_payment
+		( 
+		payment_id
+		, user_id
+		, amount
+		, payed_at
+		, status_cd
+		, added_at
+		, updated_at 
+		)
+		VALUES( 
+		#{paymentId}
+		, #{userId}
+		, #{amount}
+		, systimestamp
+		, 'PS00'
+		, systimestamp
+		, systimestamp 
+		)
+	</insert>
+</mapper>
